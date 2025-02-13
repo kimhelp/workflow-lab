@@ -1,0 +1,16 @@
+name: The third workflows
+on: push
+jobs:
+  checkout:
+    runs-on: ubuntu-latest
+    steps:
+      - name: list all
+        run: ls -al
+      - uses: actions/checkout@v3
+        with:
+          path: sources
+      - name: list all again
+        run: |
+          ls -al sources
+          cd sources
+          cat .github/workflows/first.yml
