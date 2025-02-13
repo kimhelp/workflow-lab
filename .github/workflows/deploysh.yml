@@ -1,27 +1,35 @@
 #!/usr/bin/env bash
 
-
 REPOSITORY=/home/ec2-user/cicdproject
+if [ ! -d "$REPOSITORY" ]; then
+  echo "디렉토리 $REPOSITORY가 존재하지 않습니다."
+  exit 1
+fi
 cd $REPOSITORY
-
 
 APP_NAME=cicdproject
 JAR_NAME=$(ls $REPOSITORY/build/libs/ | grep 'SNAPSHOT.jar' | tail -n 1)
-JAR_PATH=$REPOSITORY/build/libs/$JAR_NAME
 
+if [ -z "$JAR_NAME" ]; then
+  echo "JAR 파일을 찾을 수 없습니다."
+  exit 1
+fi
+
+JAR_PATH=$REPOSITORY/build/libs/$JAR_NAME
 
 CURRENT_PID=$(pgrep -f $APP_NAME)
 
-
-if [ -z $CURRENT_PID ]
-then
+if [ -z "$CURRENT_PID" ]; then
   echo "> 종료할것 없음."
 else
-  echo "> kill -9 $CURRENT_PID"
+  echo "> kill -15 $CURRENT_PID"
   kill -15 $CURRENT_PID
   sleep 5
+
+  # 강제 종료 (필요한 경우)
+  echo "> 강제 종료 (kill -9)"
+  kill -9 $CURRENT_PID
 fi
 
-
 echo "> $JAR_PATH 배포"
-nohup java -jar $JAR_PATH > /dev/null 2> /dev/null < /dev/null &
+nohup java -jar $JAR_PATH > /var/log/$APP_NAME.log 2>&1 < /dev/null &
